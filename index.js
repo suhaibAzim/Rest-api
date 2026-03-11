@@ -2,7 +2,10 @@ let express = require("express");
 let app = express();
 let path = require("path");
 const {v4 : uuidv4} = require('uuid');
+const methodOverride = require("method-override");  //for put,patch,delete
+
 app.use(express.urlencoded({extended: true}));
+app.use(methodOverride("_method"));
 
 app.set("view engine" , "ejs");
 app.set("views" , path.join(__dirname,"views")); //connect ejs+index.js
@@ -43,6 +46,21 @@ app.get("/posts/new",(req,res)=>{
     res.render("new.ejs");
 })
 
+app.patch("/posts/:id",(req,res)=>{
+    let { id } = req.params;
+    let newContent = req.body.content;
+
+    let post = posts.find((p)=> p.id == id);
+    post.content = newContent;
+    res.redirect("/posts");
+})
+
+app.get("/posts/:id/edit",(req,res)=>{
+    const {id} = req.params;
+    let post = posts.find((p)=> p.id == id);
+    res.render("update.ejs",{post});
+})
+
 app.get("/posts/:id",(req,res)=>{
     const {id} = req.params;
     let post = posts.find((p)=> p.id == id);
@@ -50,6 +68,12 @@ app.get("/posts/:id",(req,res)=>{
     if(post){ //post exixt krti hain
         res.render("showPost.ejs", {post} );
     }
+})
+
+app.delete("/posts/:id",(req,res)=>{
+    const {id} = req.params;
+    posts = posts.filter((p)=> p.id !== id);
+    res.redirect("/posts");
 })
 
 app.listen(3000,()=>{
